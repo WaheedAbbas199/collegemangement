@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>College Management System — Demo</title>
+  <!-- Example of a CSP header to be set on server for production:
+       Content-Security-Policy: default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline';
+       In this demo we include it as a comment only. -->
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #fff;
+      background: url("lahza.jpeg") no-repeat center center fixed;
+      background-size: cover;
+    }
+    header {
+      background: rgba(0, 21, 40, 0.95);
+      color: #ffcc00;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 3px solid #ffcc00;
+    }
+    .title { font-size: 22px; font-weight: bold; letter-spacing: 1px; display:flex; gap:10px; align-items:center;}
+    nav {
+      background: rgba(128, 0, 32, 0.95);
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px;
+      flex-wrap:wrap;
+    }
+    nav button, .top-controls button {
+      background: #ffcc00;
+      border: none;
+      padding: 8px 14px;
+      font-weight: bold;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.2s;
+      color: #002147;
+    }
+    nav button:hover, .top-controls button:hover { background: #ffaa00; color:#fff; }
+    section {
+      display: none;
+      padding: 20px;
+    }
+    section.active { display: block; animation: fadeIn 0.35s ease-in-out; }
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    .form-container {
+      background: rgba(0, 21, 40, 0.88);
+      padding: 18px;
+      border-radius: 10px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.5);
+      max-width: 700px;
+      margin: auto;
+      color: #fff;
+    }
+    .form-container h2 { text-align:center; margin-bottom:12px; color:#ffcc00; }
+    label { display:block; margin-top:8px; font-weight:bold; color:#ffcc00; }
+    input, select, textarea {
+      width:100%; padding:8px; margin-top:6px; border-radius:6px; border:1px solid #ccc; color:#002147;
+    }
+    .btn { margin-top:12px; background:#ffcc00; color:#002147; border:none; padding:10px; width:100%; border-radius:6px; cursor:pointer; font-weight:bold; }
+    .btn:hover { background:#ffaa00; color:#fff; }
+    .output { margin-top:12px; padding:12px; background: rgba(255,255,255,0.06); border-radius:6px; min-height:48px; color:#ffcc00; }
+    .small { font-size:13px; color:#ddd; margin-top:6px; }
+    .error { color: #ff6b6b; font-weight:bold; }
+    .success { color: #9ee89b; font-weight:bold; }
+    .top-controls { display:flex; gap:8px; align-items:center; }
+    .login-panel { background:rgba(255,255,255,0.03); padding:8px; border-radius:6px; }
+    .badge { font-size:13px; padding:6px 8px; border-radius:6px; background:rgba(255,255,255,0.04); }
+    .responsibilities { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .responsibilities label { font-weight:normal; color:#ddd; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="title">🏫Lahza International College Management System</div>
+
+    <div class="top-controls">
+      <div id="currentUserBadge" class="badge">Not logged in</div>
+      <div class="login-panel" id="loginPanel">
+        <input id="loginUsername" placeholder="username" style="width:110px;padding:6px;border-radius:6px;border:1px solid #ccc" />
+        <input id="loginPassword" placeholder="password" type="password" style="width:110px;padding:6px;border-radius:6px;border:1px solid #ccc" />
+        <button onclick="login()">Login</button>
+        <button onclick="logout()" style="background:#ff6b6b;color:#fff;">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <button onclick="showSection('college')">College Info</button>
+    <button onclick="showSection('student')">Students</button>
+    <button onclick="showSection('instructor')">Instructors</button>
+    <button onclick="showSection('course')">Courses</button>
+    <button onclick="showSection('manager')">Manager</button>
+    <button onclick="showSection('audit')">Audit</button>
+  </nav>
+
+  <!-- College Info -->
+  <section id="college" class="active">
+    <div class="form-container">
+      <h2>Update Lahza International College Information</h2>
+      <label>College Name:</label>
+      <input type="text" id="collegeName" placeholder="Enter college name">
+
+      <label>Principal:</label>
+      <input type="text" id="principalName" placeholder="Enter principal name">
+
+      <label>Vice Principal:</label>
+      <input type="text" id="vicePrincipalName" placeholder="Enter vice principal name">
+
+      <button class="btn" onclick="protectedAction(updateCollege)">Update College Info</button>
+
+      <div class="output" id="collegeOutput"></div>
+    </div>
+  </section>
+
+  <!-- Student Section -->
+  <section id="student">
+    <div class="form-container">
+      <h2>Add / Update Student</h2>
+      <label>Roll No:</label>
+      <input type="number" id="rollNo" placeholder="Enter Roll No">
+
+      <label>Name:</label>
+      <input type="text" id="studentName" placeholder="Enter student name">
+
+      <label>Class:</label>
+      <input type="text" id="studentClass" placeholder="Enter student class">
+
+      <button class="btn" onclick="protectedAction(addStudent)">Add Student</button>
+      <button class="btn" onclick="protectedAction(updateStudent)">Update Student</button>
+
+      <div class="output" id="studentOutput"></div>
+    </div>
+  </section>
+
+  <!-- Instructor Section -->
+  <section id="instructor">
+    <div class="form-container">
+      <h2>Add / Update Instructor</h2>
+      <label>ID:</label>
+      <input type="number" id="instructorId" placeholder="Enter Instructor ID">
+
+      <label>Name:</label>
+      <input type="text" id="instructorName" placeholder="Enter instructor name">
+
+      <label>Subject:</label>
+      <input type="text" id="instructorSubject" placeholder="Enter subject">
+
+      <button class="btn" onclick="protectedAction(addInstructor)">Add Instructor</button>
+      <button class="btn" onclick="protectedAction(updateInstructor)">Update Instructor</button>
+
+      <div class="output" id="instructorOutput"></div>
+    </div>
+  </section>
+
+  <!-- Courses Section -->
+  <section id="course">
+    <div class="form-container">
+      <h2>Add / Update Course</h2>
+      <label>Course Code:</label>
+      <input type="text" id="courseCode" placeholder="Enter course code">
+
+      <label>Course Name:</label>
+      <input type="text" id="courseName" placeholder="Enter course name">
+
+      <label>Fee:</label>
+      <input type="number" id="courseFee" placeholder="Enter course fee">
+
+      <button class="btn" onclick="protectedAction(addCourse)">Add Course</button>
+      <button class="btn" onclick="protectedAction(updateCourse)">Update Course</button>
+
+      <div class="output" id="courseOutput"></div>
+    </div>
+  </section>
+
+  <!-- Manager Section -->
+  <section id="manager">
+    <div class="form-container">
+      <h2>Add / Update Manager (Manager handles approvals & admin tasks)</h2>
+
+      <label>Manager ID:</label>
+      <input type="text" id="managerId" placeholder="Enter manager id">
+
+      <label>Manager Name:</label>
+      <input type="text" id="managerName" placeholder="Enter manager name">
+
+      <label>Manager Password (demo):</label>
+      <input type="password" id="managerPassword" placeholder="Set a demo password">
+
+      <label>Responsibilities (choose):</label>
+      <div class="responsibilities">
+        <label><input type="checkbox" id="respAuth"> Authentication</label>
+        <label><input type="checkbox" id="respValidate"> Data Validation</label>
+        <label><input type="checkbox" id="respError"> Error Handling</label>
+        <label><input type="checkbox" id="respSecurity"> Security</label>
+        <label><input type="checkbox" id="respApprove"> Approve Entries</label>
+      </div>
+
+      <button class="btn" onclick="protectedAction(addManager)">Add Manager</button>
+      <button class="btn" onclick="protectedAction(updateManager)">Update Manager</button>
+
+      <div class="output" id="managerOutput"></div>
+
+      <div class="small">Manager-only actions (demo): reset all data, approve pending students — requires manager login.</div>
+      <div style="margin-top:10px">
+        <button class="btn" style="background:#ff6b6b;color:#fff;" onclick="protectedManagerAction(resetAllData)">Reset All Data (Manager only)</button>
+        <button class="btn" style="background:#8ad5ff;color:#002147;" onclick="protectedManagerAction(approveAllPending)">Approve All Pending</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Audit Section -->
+  <section id="audit">
+    <div class="form-container">
+      <h2>Audit & Summary</h2>
+      <div class="output" id="auditOutput"></div>
+      <div class="small">This audit is a frontend demo list of actions since page load (won't persist between reloads unless you add localStorage/sessionStorage).</div>
+    </div>
+  </section>
+
+  <script>
+    // -----------------------
+    // Demo "Database" (frontend only)
+    // -----------------------
+    let college = { name: "Lahza International College", principal: "Sir Usman Sahab", vicePrincipal: "Mam Amina" };
+    let students = [];         // approved students
+    let pendingStudents = [];  // pending approval
+    let instructors = [];
+    let courses = [];
+    let managers = [];
+    let auditLog = [];
+
+    // Pre-defined demo users for authentication (DEMO ONLY)
+    // In production, do NOT store credentials in client-side code.
+    const demoUsers = [
+      { username: "manager", password: "manager123", role: "manager" },
+      { username: "user1", password: "user123", role: "user" }
+    ];
+
+    // -----------------------
+    // Utility & security helpers (frontend demo)
+    // -----------------------
+    function sanitizeText(str) {
+      if (!str && str !== 0) return "";
+      return String(str).replace(/[<>]/g, ""); // very small demo sanitizer
+    }
+
+    function addAudit(action, details) {
+      const ts = new Date().toISOString();
+      auditLog.unshift({ ts, action, details });
+      renderAudit();
+    }
+
+    function renderListTo(nodeId, items, formatter) {
+      const container = document.getElementById(nodeId);
+      // clear container
+      container.textContent = "";
+      if (!items.length) {
+        container.textContent = "(no records)";
+        return;
+      }
+      items.forEach(it => {
+        const p = document.createElement("div");
+        p.textContent = formatter(it);
+        container.appendChild(p);
+      });
+    }
+
+    function showMessage(containerId, message, cls) {
+      const node = document.getElementById(containerId);
+      node.textContent = message;
+      node.className = "output " + (cls || "");
+    }
+
+    // -----------------------
+    // Simple Authentication (frontend-only demo)
+    // -----------------------
+    function login() {
+      try {
+        const u = document.getElementById("loginUsername").value.trim();
+        const p = document.getElementById("loginPassword").value;
+
+        if (!u || !p) {
+          showMessage("collegeOutput", "Please enter username and password.", "error");
+          return;
+        }
+
+        const user = demoUsers.find(x => x.username === u && x.password === p);
+        if (!user) {
+          showMessage("collegeOutput", "Login failed. Invalid credentials.", "error");
+          document.getElementById("currentUserBadge").textContent = "Not logged in";
+          sessionStorage.removeItem("cms_user");
+          return;
+        }
+
+        // Save minimal session info
+        sessionStorage.setItem("cms_user", JSON.stringify({ username: user.username, role: user.role }));
+        document.getElementById("currentUserBadge").textContent = `Logged in: ${user.username} (${user.role})`;
+        addAudit("login", `${user.username} logged in`);
+        showMessage("collegeOutput", `Welcome ${user.username}!`, "success");
+      } catch (err) {
+        console.error(err);
+        showMessage("collegeOutput", "An error occurred during login.", "error");
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem("cms_user");
+      document.getElementById("currentUserBadge").textContent = "Not logged in";
+      addAudit("logout", "user logged out");
+      showMessage("collegeOutput", "Logged out.", "");
+    }
+
+    function getCurrentUser() {
+      try {
+        const s = sessionStorage.getItem("cms_user");
+        if (!s) return null;
+        return JSON.parse(s);
+      } catch (err) {
+        return null;
+      }
+    }
+
+    // wrapper to enforce that an action requires login
+    function protectedAction(fn) {
+      const user = getCurrentUser();
+      if (!user) {
+        showMessage("collegeOutput", "Action requires login. Please login first.", "error");
+        return;
+      }
+      try {
+        fn(user);
+      } catch (err) {
+        console.error(err);
+        showMessage("collegeOutput", "An unexpected error occurred. Check console.", "error");
+      }
+    }
+
+    // wrapper to enforce manager-only actions
+    function protectedManagerAction(fn) {
+      const user = getCurrentUser();
+      if (!user) {
+        showMessage("managerOutput", "Manager action requires login. Please login as manager.", "error");
+        return;
+      }
+      if (user.role !== "manager") {
+        showMessage("managerOutput", "Unauthorized: manager role required.", "error");
+        return;
+      }
+      try {
+        fn(user);
+      } catch (err) {
+        console.error(err);
+        showMessage("managerOutput", "Manager action error. See console.", "error");
+      }
+    }
+
+    // -----------------------
+    // College functions
+    // -----------------------
+    function updateCollege() {
+      try {
+        const name = sanitizeText(document.getElementById("collegeName").value) || college.name;
+        const principal = sanitizeText(document.getElementById("principalName").value) || college.principal;
+        const vice = sanitizeText(document.getElementById("vicePrincipalName").value) || college.vicePrincipal;
+
+        college.name = name; college.principal = principal; college.vicePrincipal = vice;
+        addAudit("updateCollege", `${name}, ${principal}, ${vice}`);
+        renderCollege();
+        showMessage("collegeOutput", "College information updated.", "success");
+      } catch (err) {
+        console.error(err);
+        showMessage("collegeOutput", "Failed to update college info.", "error");
+      }
+    }
+
+    function renderCollege() {
+      const out = document.getElementById("collegeOutput");
+      out.textContent = "";
+      const b = document.createElement("div");
+      b.innerHTML = `<b>College:</b> ${sanitizeText(college.name)}\n\n`;
+      // For display we use text nodes for untrusted content
+      out.appendChild(document.createTextNode(`College: ${college.name}\nPrincipal: ${college.principal}\nVice Principal: ${college.vicePrincipal}`));
+    }
+
+    // -----------------------
+    // Students
+    // -----------------------
+    function validateStudent(roll, name, cls) {
+      if (!roll) throw new Error("Roll number is required.");
+      if (!name || name.trim().length < 2) throw new Error("Student name must be at least 2 characters.");
+      if (!cls || cls.trim().length < 1) throw new Error("Student class is required.");
+      if (isNaN(Number(roll)) || Number(roll) <= 0) throw new Error("Roll must be a positive number.");
+    }
+
+    function addStudent() {
+      try {
+        const roll = sanitizeText(document.getElementById("rollNo").value);
+        const name = sanitizeText(document.getElementById("studentName").value);
+        const cls = sanitizeText(document.getElementById("studentClass").value);
+
+        validateStudent(roll, name, cls);
+
+        // Add to pending — manager approves later
+        pendingStudents.push({ roll, name, cls, addedAt: new Date().toISOString() });
+        addAudit("addStudent", `roll:${roll}, name:${name}`);
+        renderStudents();
+        showMessage("studentOutput", "Student added to pending approval.", "success");
+      } catch (err) {
+        showMessage("studentOutput", "Validation error: " + err.message, "error");
+      }
+    }
+
+    function updateStudent() {
+      try {
+        const roll = sanitizeText(document.getElementById("rollNo").value);
+        const name = sanitizeText(document.getElementById("studentName").value);
+        const cls = sanitizeText(document.getElementById("studentClass").value);
+
+        if (!roll) { showMessage("studentOutput", "Provide roll to update.", "error"); return; }
+
+        // try approved first
+        let s = students.find(s => s.roll == roll);
+        if (!s) s = pendingStudents.find(s => s.roll == roll);
+
+        if (!s) { showMessage("studentOutput", "Student not found.", "error"); return; }
+
+        if (name) s.name = name;
+        if (cls) s.cls = cls;
+        addAudit("updateStudent", `roll:${roll}`);
+        renderStudents();
+        showMessage("studentOutput", "Student updated.", "success");
+      } catch (err) {
+        showMessage("studentOutput", "Error updating student: " + err.message, "error");
+      }
+    }
+
+    function renderStudents() {
+      // Approved students
+      renderListTo("studentOutput", students, s => `Roll: ${s.roll}, ${s.name} (${s.cls})`);
+      // Also show pending beneath
+      const out = document.getElementById("studentOutput");
+      const divider = document.createElement("div");
+      divider.style.marginTop = "8px";
+      divider.style.color = "#ddd";
+      divider.textContent = `Pending: ${pendingStudents.length}`;
+      out.appendChild(divider);
+      pendingStudents.forEach(p => {
+        const pEl = document.createElement("div");
+        pEl.textContent = `Roll: ${p.roll}, ${p.name} (${p.cls}) — added ${p.addedAt}`;
+        out.appendChild(pEl);
+      });
+    }
+
+    // -----------------------
+    // Instructors
+    // -----------------------
+    function validateInstructor(id, name, subject) {
+      if (!id) throw new Error("Instructor ID required.");
+      if (!name || name.trim().length < 2) throw new Error("Instructor name must be at least 2 characters.");
+      if (!subject) throw new Error("Subject required.");
+    }
+
+    function addInstructor() {
+      try {
+        const id = sanitizeText(document.getElementById("instructorId").value);
+        const name = sanitizeText(document.getElementById("instructorName").value);
+        const subject = sanitizeText(document.getElementById("instructorSubject").value);
+
+        validateInstructor(id, name, subject);
+
+        instructors.push({ id, name, subject });
+        addAudit("addInstructor", `id:${id}, name:${name}`);
+        renderInstructors();
+        showMessage("instructorOutput", "Instructor added.", "success");
+      } catch (err) {
+        showMessage("instructorOutput", "Validation error: " + err.message, "error");
+      }
+    }
+
+    function updateInstructor() {
+      try {
+        const id = sanitizeText(document.getElementById("instructorId").value);
+        const name = sanitizeText(document.getElementById("instructorName").value);
+        const subject = sanitizeText(document.getElementById("instructorSubject").value);
+
+        const i = instructors.find(x => x.id == id);
+        if (!i) { showMessage("instructorOutput", "Instructor not found.", "error"); return; }
+        if (name) i.name = name;
+        if (subject) i.subject = subject;
+        addAudit("updateInstructor", `id:${id}`);
+        renderInstructors();
+        showMessage("instructorOutput", "Instructor updated.", "success");
+      } catch (err) {
+        showMessage("instructorOutput", "Error: " + err.message, "error");
+      }
+    }
+
+    function renderInstructors() {
+      renderListTo("instructorOutput", instructors, i => `ID: ${i.id}, ${i.name} - ${i.subject}`);
+    }
+
+    // -----------------------
+    // Courses
+    // -----------------------
+    function validateCourse(code, name, fee) {
+      if (!code || code.trim().length < 2) throw new Error("Course code required.");
+      if (!name || name.trim().length < 2) throw new Error("Course name required.");
+      if (isNaN(Number(fee)) || Number(fee) < 0) throw new Error("Fee must be a non-negative number.");
+    }
+
+    function addCourse() {
+      try {
+        const code = sanitizeText(document.getElementById("courseCode").value);
+        const name = sanitizeText(document.getElementById("courseName").value);
+        const fee = sanitizeText(document.getElementById("courseFee").value);
+
+        validateCourse(code, name, fee);
+
+        courses.push({ code, name, fee });
+        addAudit("addCourse", `${code}, ${name}`);
+        renderCourses();
+        showMessage("courseOutput", "Course added.", "success");
+      } catch (err) {
+        showMessage("courseOutput", "Validation error: " + err.message, "error");
+      }
+    }
+
+    function updateCourse() {
+      try {
+        const code = sanitizeText(document.getElementById("courseCode").value);
+        const name = sanitizeText(document.getElementById("courseName").value);
+        const fee = sanitizeText(document.getElementById("courseFee").value);
+
+        const c = courses.find(x => x.code == code);
+        if (!c) { showMessage("courseOutput", "Course not found.", "error"); return; }
+        if (name) c.name = name;
+        if (fee) {
+          if (isNaN(Number(fee)) || Number(fee) < 0) throw new Error("Fee must be a non-negative number.");
+          c.fee = fee;
+        }
+        addAudit("updateCourse", `${code}`);
+        renderCourses();
+        showMessage("courseOutput", "Course updated.", "success");
+      } catch (err) {
+        showMessage("courseOutput", "Error: " + err.message, "error");
+      }
+    }
+
+    function renderCourses() {
+      renderListTo("courseOutput", courses, c => `${c.code} - ${c.name} | Fee: ${c.fee}`);
+    }
+
+    // -----------------------
+    // Manager functions
+    // -----------------------
+    function addManager() {
+      try {
+        const id = sanitizeText(document.getElementById("managerId").value);
+        const name = sanitizeText(document.getElementById("managerName").value);
+        const password = document.getElementById("managerPassword").value;
+
+        if (!id || !name || !password) {
+          showMessage("managerOutput", "Manager id, name and password are required (demo).", "error");
+          return;
+        }
+
+        const responsibilities = {
+          auth: document.getElementById("respAuth").checked,
+          validate: document.getElementById("respValidate").checked,
+          error: document.getElementById("respError").checked,
+          security: document.getElementById("respSecurity").checked,
+          approve: document.getElementById("respApprove").checked
+        };
+
+        managers.push({ id, name, responsibilities, createdAt: new Date().toISOString() });
+        // NOTE: DO NOT store passwords client-side in production.
+        demoUsers.push({ username: id, password: password, role: "manager" });
+
+        addAudit("addManager", `id:${id}, name:${name}`);
+        renderManagers();
+        showMessage("managerOutput", "Manager added (demo). You can now login with manager credentials.", "success");
+      } catch (err) {
+        showMessage("managerOutput", "Error creating manager: " + err.message, "error");
+      }
+    }
+
+    function updateManager() {
+      try {
+        const id = sanitizeText(document.getElementById("managerId").value);
+        const name = sanitizeText(document.getElementById("managerName").value);
+
+        if (!id) { showMessage("managerOutput", "Manager id required to update.", "error"); return; }
+        const m = managers.find(x => x.id == id);
+        if (!m) { showMessage("managerOutput", "Manager not found.", "error"); return; }
+
+        if (name) m.name = name;
+        // update responsibilities optionally
+        m.responsibilities = {
+          auth: document.getElementById("respAuth").checked,
+          validate: document.getElementById("respValidate").checked,
+          error: document.getElementById("respError").checked,
+          security: document.getElementById("respSecurity").checked,
+          approve: document.getElementById("respApprove").checked
+        };
+        addAudit("updateManager", `id:${id}`);
+        renderManagers();
+        showMessage("managerOutput", "Manager updated.", "success");
+      } catch (err) {
+        showMessage("managerOutput", "Error updating manager: " + err.message, "error");
+      }
+    }
+
+    function renderManagers() {
+      renderListTo("managerOutput", managers, m => `ID: ${m.id}, ${m.name} — responsibilities: ${Object.keys(m.responsibilities).filter(k => m.responsibilities[k]).join(", ")}`);
+    }
+
+    // Manager-only actions (demo)
+    function resetAllData() {
+      if (!confirm("Resetting will clear students, instructors, courses, pending lists. Continue?")) return;
+      students = []; pendingStudents = []; instructors = []; courses = [];
+      addAudit("resetAllData", "All data cleared by manager");
+      renderAll();
+      showMessage("managerOutput", "All data reset (demo).", "success");
+    }
+
+    function approveAllPending() {
+      // move pendingStudents into approved students
+      if (!pendingStudents.length) { showMessage("managerOutput", "No pending students to approve.", "error"); return; }
+      pendingStudents.forEach(p => students.push(p));
+      const count = pendingStudents.length;
+      pendingStudents = [];
+      addAudit("approveAllPending", `approved ${count} students`);
+      renderAll();
+      showMessage("managerOutput", `${count} pending students approved.`, "success");
+    }
+
+    // -----------------------
+    // Audit rendering
+    // -----------------------
+    function renderAudit() {
+      const out = document.getElementById("auditOutput");
+      out.textContent = "";
+      if (!auditLog.length) { out.textContent = "(no audit entries)"; return; }
+      auditLog.slice(0, 30).forEach(e => {
+        const d = document.createElement("div");
+        d.textContent = `${e.ts} — ${e.action} — ${e.details}`;
+        out.appendChild(d);
+      });
+    }
+
+    // -----------------------
+    // UI helpers
+    // -----------------------
+    function showSection(id) {
+      document.querySelectorAll("section").forEach(sec => sec.classList.remove("active"));
+      const el = document.getElementById(id);
+      if (el) el.classList.add("active");
+      // update small summaries when switching
+      if (id === "student") renderStudents();
+      if (id === "instructor") renderInstructors();
+      if (id === "course") renderCourses();
+      if (id === "manager") renderManagers();
+      if (id === "audit") renderAudit();
+    }
+
+    function renderAll() {
+      renderCollege();
+      renderStudents();
+      renderInstructors();
+      renderCourses();
+      renderManagers();
+      renderAudit();
+    }
+
+    // initialize UI
+    renderAll();
+
+    // For convenience during demo, attempt to show current user badge
+    const currentUser = getCurrentUser();
+    if (currentUser) document.getElementById("currentUserBadge").textContent = `Logged in: ${currentUser.username} (${currentUser.role})`;
+
+    // Expose some internal functions for console debugging (DEV)
+    window._cms = {
+      students, pendingStudents, instructors, courses, managers, auditLog,
+      addStudent, updateStudent, addInstructor, addCourse
+    };
+  </script>
+</body>
+</html>
